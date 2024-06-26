@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpaceX Starship Lander</title>
+    <title>Enhanced SpaceX Starship Lander</title>
     <style>
         body {
             display: flex;
@@ -46,15 +46,17 @@
             starship = {
                 x: canvas.width / 2,
                 y: 50,
-                width: 50,
-                height: 100,
+                width: 40,
+                height: 120,
                 speed: 0,
                 horizontalSpeed: 0,
                 acceleration: 0.05,
                 fuel: 100,
                 rotation: 0,
-                maxRotation: Math.PI / 4,
-                thrust: 0
+                maxRotation: Math.PI / 6,
+                thrust: 0,
+                mainEngineThrust: 0.3,
+                rcsThrust: 0.1
             };
 
             landingPad = {
@@ -101,20 +103,66 @@
             ctx.closePath();
             ctx.fill();
 
+            // Draw cylindrical body
+            ctx.fillStyle = '#d3d3d3';
+            ctx.fillRect(starship.x + 5, starship.y + 30, starship.width - 10, starship.height - 40);
+
+            // Draw nose cone
+            ctx.fillStyle = '#a9a9a9';
+            ctx.beginPath();
+            ctx.moveTo(starship.x + 5, starship.y + 30);
+            ctx.lineTo(starship.x + starship.width / 2, starship.y);
+            ctx.lineTo(starship.x + starship.width - 5, starship.y + 30);
+            ctx.closePath();
+            ctx.fill();
+
             // Draw windows
             ctx.fillStyle = 'skyblue';
-            ctx.fillRect(starship.x + 10, starship.y + 20, 10, 10);
-            ctx.fillRect(starship.x + 30, starship.y + 20, 10, 10);
+            ctx.fillRect(starship.x + 15, starship.y + 40, 10, 10);
+            ctx.fillRect(starship.x + starship.width - 25, starship.y + 40, 10, 10);
 
-            // Draw thrust
+            // Draw fins
+            ctx.fillStyle = '#b8b8b8';
+            ctx.beginPath();
+            ctx.moveTo(starship.x, starship.y + starship.height);
+            ctx.lineTo(starship.x - 10, starship.y + starship.height);
+            ctx.lineTo(starship.x + 5, starship.y + starship.height - 20);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(starship.x + starship.width, starship.y + starship.height);
+            ctx.lineTo(starship.x + starship.width + 10, starship.y + starship.height);
+            ctx.lineTo(starship.x + starship.width - 5, starship.y + starship.height - 20);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw main engine thrust
             if (starship.thrust > 0) {
                 ctx.fillStyle = 'orange';
                 ctx.beginPath();
-                ctx.moveTo(starship.x + 10, starship.y + starship.height);
-                ctx.lineTo(starship.x + starship.width / 2, starship.y + starship.height + 20 * starship.thrust);
-                ctx.lineTo(starship.x + starship.width - 10, starship.y + starship.height);
+                ctx.moveTo(starship.x + 5, starship.y + starship.height);
+                ctx.lineTo(starship.x + starship.width / 2, starship.y + starship.height + 30 * starship.thrust);
+                ctx.lineTo(starship.x + starship.width - 5, starship.y + starship.height);
                 ctx.closePath();
                 ctx.fill();
+            }
+
+            // Draw RCS thrusters
+            if (starship.horizontalSpeed !== 0) {
+                ctx.fillStyle = 'lightblue';
+                const thrustSize = 8;
+                if (starship.horizontalSpeed > 0) {
+                    // Left RCS
+                    ctx.fillRect(starship.x - thrustSize, starship.y + starship.height / 2 - thrustSize / 2, thrustSize, thrustSize);
+                    ctx.fillRect(starship.x - thrustSize, starship.y + starship.height / 4 - thrustSize / 2, thrustSize, thrustSize);
+                    ctx.fillRect(starship.x - thrustSize, starship.y + 3 * starship.height / 4 - thrustSize / 2, thrustSize, thrustSize);
+                } else {
+                    // Right RCS
+                    ctx.fillRect(starship.x + starship.width, starship.y + starship.height / 2 - thrustSize / 2, thrustSize, thrustSize);
+                    ctx.fillRect(starship.x + starship.width, starship.y + starship.height / 4 - thrustSize / 2, thrustSize, thrustSize);
+                    ctx.fillRect(starship.x + starship.width, starship.y + 3 * starship.height / 4 - thrustSize / 2, thrustSize, thrustSize);
+                }
             }
 
             ctx.restore();
@@ -162,6 +210,8 @@
             const bottomY = starship.y + starship.height;
             const centerX = starship.x + starship.width / 2;
 
+            console.log("Bottom Y:", bottomY, "Center X:", centerX, "Rotation:", starship.rotation, "Speed:", starship.speed);
+
             // Check landing
             if (bottomY >= landingPad.y &&
                 centerX >= landingPad.x && centerX <= landingPad.x + landingPad.width &&
@@ -185,18 +235,21 @@
             });
         }
 
+
+
         function drawGameState() {
             ctx.font = '30px Arial';
             ctx.fillStyle = 'white';
             ctx.textAlign = 'center';
             if (gameState === 'landed') {
-                ctx.fillText(`Level ${level - 1} Completed! Score: ${score}`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Landed Successfully! Level ${level - 1} Completed!`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
             } else if (gameState === 'crashed') {
                 ctx.fillText(`Crashed! Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
             } else if (gameState === 'out of fuel') {
                 ctx.fillText(`Out of Fuel! Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
             }
-            ctx.fillText('Press R to Restart', canvas.width / 2, canvas.height / 2 + 40);
+            ctx.fillText('Press R to Restart', canvas.width / 2, canvas.height / 2 + 80);
         }
 
         function updateHUD() {
@@ -224,8 +277,13 @@
                     gameState = 'out of fuel';
                 }
 
+                // Apply drag to horizontal movement
                 starship.horizontalSpeed *= 0.99;
-                starship.rotation = Math.atan2(starship.horizontalSpeed, 5);
+
+                // Update rotation based on horizontal speed, but limit it
+                const targetRotation = Math.atan2(starship.horizontalSpeed, 5);
+                starship.rotation += (targetRotation - starship.rotation) * 0.1;
+                starship.rotation = Math.max(-starship.maxRotation, Math.min(starship.maxRotation, starship.rotation));
 
                 starship.x = Math.max(0, Math.min(canvas.width - starship.width, starship.x));
                 starship.y = Math.max(0, starship.y);
@@ -242,16 +300,16 @@
                 switch (event.code) {
                     case 'Space':
                     case 'ArrowUp':
-                        starship.speed -= 0.5;
+                        starship.speed -= starship.mainEngineThrust;
                         starship.fuel -= 1;
                         starship.thrust = 1;
                         break;
                     case 'ArrowLeft':
-                        starship.horizontalSpeed -= 0.2;
+                        starship.horizontalSpeed -= starship.rcsThrust;
                         starship.fuel -= 0.5;
                         break;
                     case 'ArrowRight':
-                        starship.horizontalSpeed += 0.2;
+                        starship.horizontalSpeed += starship.rcsThrust;
                         starship.fuel -= 0.5;
                         break;
                 }
