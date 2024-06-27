@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpaceX Starship Lander Game</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #0c0c2a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: twinkle 5s infinite;
+        }
+        @keyframes twinkle {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px #00ffff;
+        }
+        .play-button {
+            background-color: #ff4500;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-bottom: 20px;
+        }
+        .play-button:hover {
+            background-color: #ff6347;
+            transform: scale(1.05);
+        }
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .instructions h2 {
+            color: #00ffff;
+        }
+        .instructions ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        .starship {
+            position: absolute;
+            width: 100px;
+            height: 200px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 200"><path d="M50,0 L0,200 H100 Z" fill="%23c0c0c0"/></svg>');
+            animation: float 3s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+    <div class="container">
+        <div class="starship" style="top: 10%; left: 10%;"></div>
+        <div class="starship" style="top: 30%; right: 15%;"></div>
+        <h1>SpaceX Starship Lander Game</h1>
+        <a href="game.html" class="play-button">Play Now</a>
+        <div class="instructions">
+            <h2>How to Play</h2>
+            <ul>
+                <li>Use <strong>Up Arrow</strong> or <strong>Space</strong> for main engine thrust</li>
+                <li>Use <strong>Left</strong> and <strong>Right Arrows</strong> for horizontal control</li>
+                <li>Land safely on the yellow pad</li>
+                <li>Avoid obstacles and manage your fuel</li>
+                <li>Collect green orbs for fuel and gold orbs for points</li>
+                <li>Complete levels to increase your score</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

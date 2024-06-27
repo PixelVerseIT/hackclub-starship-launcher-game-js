@@ -115,6 +115,9 @@
                     type: Math.random() < 0.5 ? 'fuel' : 'score'
                 });
             }
+
+            gameState = 'playing';
+            updateHUD();
         }
 
         function drawStarship() {
@@ -256,8 +259,11 @@
                 gameState = 'landed';
                 score += 1000 * level;
                 level++;
+                updateHUD();
             } else if (bottomY > canvas.height) {
                 gameState = 'crashed';
+                lives--;
+                updateHUD();
             }
 
             // Check obstacle collisions
@@ -267,9 +273,11 @@
                     starship.y < obstacle.y + obstacle.height &&
                     starship.y + starship.height > obstacle.y) {
                     gameState = 'crashed';
+                    lives--;
+                    updateHUD();
                 }
             });
-
+            
             // Check bonus item collisions
             bonusItems = bonusItems.filter(item => {
                 if (starship.x < item.x + item.width &&
