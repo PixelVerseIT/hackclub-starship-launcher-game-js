@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enhanced SpaceX Starship Lander</title>
+    <title>SpaceX Starship Lander</title>
     <style>
         body {
             display: flex;
@@ -15,10 +15,12 @@
             background-color: #0c0c2a;
             font-family: Arial, sans-serif;
         }
+
         #gameCanvas {
             border: 2px solid #4a4a4a;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
+
         #gameInfo {
             position: absolute;
             top: 10px;
@@ -31,16 +33,18 @@
 
 <body>
     <div id="gameInfo">
+        <p><b>By Hayden Kong</b></p>
         <div>Fuel: <span id="fuelDisplay">100%</span></div>
         <div>Score: <span id="scoreDisplay">0</span></div>
         <div>Level: <span id="levelDisplay">1</span></div>
+        <div>Lives: <span id="livesDisplay">3</span></div>
     </div>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        let starship, landingPad, gameState, stars, obstacles, score, level;
+        let starship, landingPad, gameState, stars, obstacles, score, level, lives, bonusItems;
 
         function initGame() {
             starship = {
@@ -50,13 +54,13 @@
                 height: 120,
                 speed: 0,
                 horizontalSpeed: 0,
-                acceleration: 0.05,
+                acceleration: 0.03,
                 fuel: 100,
                 rotation: 0,
                 maxRotation: Math.PI / 6,
                 thrust: 0,
                 mainEngineThrust: 0.3,
-                rcsThrust: 0.1
+                rcsThrust: 0.3
             };
 
             landingPad = {
@@ -72,8 +76,27 @@
                 size: Math.random() * 2 + 1
             }));
 
+            resetLevel();
+
+            gameState = 'playing';
+            score = 0;
+            level = 1;
+            lives = 3;
+            updateHUD();
+        }
+
+        function resetLevel() {
+            starship.x = canvas.width / 2;
+            starship.y = 50;
+            starship.speed = 0;
+            starship.horizontalSpeed = 0;
+            starship.rotation = 0;
+            starship.fuel = 100;
+
+            landingPad.x = Math.random() * (canvas.width - 150);
+
             obstacles = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 3 + level; i++) {
                 obstacles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * (canvas.height - 200) + 100,
@@ -82,10 +105,16 @@
                 });
             }
 
-            gameState = 'playing';
-            score = 0;
-            level = 1;
-            updateHUD();
+            bonusItems = [];
+            for (let i = 0; i < 2; i++) {
+                bonusItems.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: Math.random() * (canvas.height - 200) + 100,
+                    width: 30,
+                    height: 30,
+                    type: Math.random() < 0.5 ? 'fuel' : 'score'
+                });
+            }
         }
 
         function drawStarship() {
@@ -179,7 +208,7 @@
         function drawBackground() {
             ctx.fillStyle = '#0c0c2a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             // Draw stars
             ctx.fillStyle = 'white';
             stars.forEach(star => {
@@ -206,17 +235,24 @@
             });
         }
 
+        function drawBonusItems() {
+            bonusItems.forEach(item => {
+                ctx.fillStyle = item.type === 'fuel' ? 'green' : 'gold';
+                ctx.beginPath();
+                ctx.arc(item.x + item.width / 2, item.y + item.height / 2, item.width / 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         function checkCollisions() {
             const bottomY = starship.y + starship.height;
             const centerX = starship.x + starship.width / 2;
 
-            console.log("Bottom Y:", bottomY, "Center X:", centerX, "Rotation:", starship.rotation, "Speed:", starship.speed);
-
             // Check landing
             if (bottomY >= landingPad.y &&
                 centerX >= landingPad.x && centerX <= landingPad.x + landingPad.width &&
-                Math.abs(starship.rotation) < 0.1 &&
-                starship.speed < 2) {
+                Math.abs(starship.rotation) < 0.4 && // Rotation tolerance
+                starship.speed < 7) { // Speed tolerance
                 gameState = 'landed';
                 score += 1000 * level;
                 level++;
@@ -233,9 +269,23 @@
                     gameState = 'crashed';
                 }
             });
+
+            // Check bonus item collisions
+            bonusItems = bonusItems.filter(item => {
+                if (starship.x < item.x + item.width &&
+                    starship.x + starship.width > item.x &&
+                    starship.y < item.y + item.height &&
+                    starship.y + starship.height > item.y) {
+                    if (item.type === 'fuel') {
+                        starship.fuel = Math.min(starship.fuel + 20, 100);
+                    } else {
+                        score += 500;
+                    }
+                    return false;
+                }
+                return true;
+            });
         }
-
-
 
         function drawGameState() {
             ctx.font = '30px Arial';
@@ -244,18 +294,31 @@
             if (gameState === 'landed') {
                 ctx.fillText(`Landed Successfully! Level ${level - 1} Completed!`, canvas.width / 2, canvas.height / 2);
                 ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+                ctx.fillText('Press SPACE to continue', canvas.width / 2, canvas.height / 2 + 80);
             } else if (gameState === 'crashed') {
-                ctx.fillText(`Crashed! Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Crashed!`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+                if (lives > 0) {
+                    ctx.fillText('Press SPACE to retry', canvas.width / 2, canvas.height / 2 + 80);
+                } else {
+                    ctx.fillText('Game Over! Press R to Restart', canvas.width / 2, canvas.height / 2 + 80);
+                }
             } else if (gameState === 'out of fuel') {
-                ctx.fillText(`Out of Fuel! Final Score: ${score}`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Out of Fuel!`, canvas.width / 2, canvas.height / 2);
+                ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 40);
+                if (lives > 0) {
+                    ctx.fillText('Press SPACE to retry', canvas.width / 2, canvas.height / 2 + 80);
+                } else {
+                    ctx.fillText('Game Over! Press R to Restart', canvas.width / 2, canvas.height / 2 + 80);
+                }
             }
-            ctx.fillText('Press R to Restart', canvas.width / 2, canvas.height / 2 + 80);
         }
 
         function updateHUD() {
             document.getElementById('fuelDisplay').textContent = `${starship.fuel.toFixed(0)}%`;
             document.getElementById('scoreDisplay').textContent = score;
             document.getElementById('levelDisplay').textContent = level;
+            document.getElementById('livesDisplay').textContent = lives;
         }
 
         function updateGame() {
@@ -263,6 +326,7 @@
             drawBackground();
             drawLandingPad();
             drawObstacles();
+            drawBonusItems();
             drawStarship();
 
             if (gameState !== 'playing') {
@@ -301,19 +365,28 @@
                     case 'Space':
                     case 'ArrowUp':
                         starship.speed -= starship.mainEngineThrust;
-                        starship.fuel -= 1;
+                        starship.fuel -= 0.5;
                         starship.thrust = 1;
                         break;
                     case 'ArrowLeft':
                         starship.horizontalSpeed -= starship.rcsThrust;
-                        starship.fuel -= 0.5;
+                        starship.fuel -= 0.25;
                         break;
                     case 'ArrowRight':
                         starship.horizontalSpeed += starship.rcsThrust;
-                        starship.fuel -= 0.5;
+                        starship.fuel -= 0.25;
                         break;
                 }
-            } else if (event.code === 'KeyR' && gameState !== 'playing') {
+            } else if (event.code === 'Space') {
+                if (gameState === 'landed') {
+                    resetLevel();
+                    gameState = 'playing';
+                } else if ((gameState === 'crashed' || gameState === 'out of fuel') && lives > 0) {
+                    lives--;
+                    resetLevel();
+                    gameState = 'playing';
+                }
+            } else if (event.code === 'KeyR' && (gameState === 'crashed' || gameState === 'out of fuel' || gameState === 'landed')) {
                 initGame();
             }
         });
