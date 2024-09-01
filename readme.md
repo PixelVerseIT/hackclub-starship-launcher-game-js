@@ -4,6 +4,9 @@
 You can vew the live demo here: https://pixelverseit.github.io/hackclub-starship-launcher-game-js/
 Or to run locally, download and open index.html in your browser!
 
+![Uploading image.png…]()
+
+
 ## Overview
 
 Enhanced SpaceX Starship Lander is an exciting browser-based game where players control a SpaceX Starship, attempting to land it safely on a designated landing pad. Navigate through increasingly challenging levels, avoid obstacles, manage your fuel, and collect bonus items to achieve the highest score possible!
