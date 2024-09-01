@@ -4,7 +4,7 @@
 You can vew the live demo here: https://pixelverseit.github.io/hackclub-starship-launcher-game-js/
 Or to run locally, download and open index.html in your browser!
 
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/daa1d086-f177-4366-9530-c19ad4680bee)
 
 
 ## Overview
